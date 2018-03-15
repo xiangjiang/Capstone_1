@@ -18,4 +18,5 @@ class Controller(object):
     def control(self):
         # TODO: Change the arg, kwarg list to suit your needs
         # Return throttle, brake, steer
+        # Calculate cte
         return 1., 0., 0.
