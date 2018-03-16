@@ -57,6 +57,10 @@ class DBWNode(object):
 
         self.dbw_enabled = False
 
+        self.target_twist = TwistStamped()
+        self.current_twist = TwistStamped()
+
+
         # TODO: Create `Controller` object
         self.controller = Controller(vehicle_mass,fuel_capacity,brake_deadband,decel_limit,accel_limit,wheel_radius,wheel_base,steer_ratio,max_lat_accel,max_steer_angle,min_speed)
 
@@ -65,10 +69,18 @@ class DBWNode(object):
 
         rospy.Subscriber('/vehicle/dbw_enabled', Bool, self.dbw_en_cb)
 
+        rospy.Subscriber('/current_velocity', TwistStamped, self.vel_cb)
+
         self.loop()
+
 
     def twist_cb(self,twist_msg):
         rospy.loginfo("Twist command received")
+        self.target_twist = twist_msg
+
+    def vel_cb(self,vel_msg):
+        rospy.loginfo("Current vel received")
+        self.current_twist = vel_msg
 
 
     def dbw_en_cb(self,dbw_msg):
@@ -88,7 +100,8 @@ class DBWNode(object):
             #                                                     <any other argument you need>)
             # if <dbw is enabled>:
             #   self.publish(throttle, brake, steer)
-            throttle, brake, steer = self.controller.control()
+
+            throttle, brake, steer = self.controller.control(self.target_twist,self.current_twist)
             rospy.loginfo("controller send out a value")
             if self.dbw_enabled:
                 self.publish(throttle, brake, steer)
